@@ -16,11 +16,11 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
-    - name: Setup .NET 10.x
+    - name: Setup .NET 10.0.404
       uses: actions/setup-dotnet@v4
       with:
         # Semantic version range syntax or exact version of a dotnet version
-        dotnet-version: '10.x'
+        dotnet-version: "10.0.404"
       # You can test your matrix by printing the current dotnet version
     - name: Display dotnet version
       run: dotnet --version
