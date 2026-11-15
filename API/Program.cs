@@ -20,6 +20,7 @@ public class Program
     {
         var AllowFrontendOriginHttp = "http://localhost:3000";
         var AllowFrontendOriginHttps = "https://localhost:3000";
+        var AllowFrontendOriginAzure = "https://agon-web-h0gubugtc2eebghn.austriaeast-01.azurewebsites.net";
 
         var builder = WebApplication.CreateBuilder(args);
        
@@ -114,7 +115,7 @@ public class Program
         // Configure CORS to allow requests from the frontend application
         app.UseCors(policy =>
         {
-            policy.WithOrigins(AllowFrontendOriginHttp, AllowFrontendOriginHttps)
+            policy.WithOrigins(AllowFrontendOriginHttp, AllowFrontendOriginHttps, AllowFrontendOriginAzure)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
