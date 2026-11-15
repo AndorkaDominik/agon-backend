@@ -40,6 +40,15 @@ public class Program
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
 
+        if (!builder.Environment.IsDevelopment())
+        {
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            });
+        }
+
         builder.Services.AddSingleton<IEmailSender<User>, DummyEmailSender>();
 
         // Automapper configuration
