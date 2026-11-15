@@ -62,4 +62,4 @@ jobs:
           app-name: 'agon'
           slot-name: 'Production'
           package: .
-          
+          startup-command: 'dotnet /home/site/wwwroot/API.dll'
