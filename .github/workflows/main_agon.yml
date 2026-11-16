@@ -21,13 +21,37 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.x'
+          global-json-file: global.json
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity normal
+
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Create migration bundle
+        run: >
+          dotnet ef migrations bundle
+          --project DAL
+          --startup-project API
+          --context ApplicationDbContext
+          --configuration Release
+          --self-contained -r linux-x64
+          -o ${{ runner.temp }}/efbundle
+          if-no-files-found: error
+
+      - name: Upload migration bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: efbundle
+          path: ${{ runner.temp }}/efbundle
+          if-no-files-found: error
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -48,12 +72,25 @@ jobs:
         with:
           name: .net-app
       
+      - name: Download migration bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: efbundle
+          path: ${{ runner.temp }}/migrations
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_F60CD8D88AC04BAD90133231A4CA81CB }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_012713C9379C42078F4AC89A52E9B87E }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_EF5EF62F7E66478CAF7CF85FF0DF9AAB }}
+
+      - name: Apply database migrations
+        env:
+          DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+        run: |
+          chmod +x ${{ runner.temp }}/migrations/efbundle
+          ${{ runner.temp }}/migrations/efbundle --connection "$DB_CONNECTION_STRING"
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
